@@ -1,0 +1,38 @@
+# timestamp: 2024/04/09 09:42:02
+
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: Workflow
+
+on:
+  schedule:
+    - cron: '33 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{secrets.WORKFLOW_TOKEN}}
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Run GenshinDirectDownloadLink
+        run: |
+          python GenshinDirectDownloadLink.py
+      - name: Commit And Push
+        run: |
+          git config user.name ${{secrets.USER_NAME}}
+          git config user.email ${{secrets.USER_EMAIL}}
+          git remote set-url origin https://${{secrets.WORKFLOW_TOKEN}}@github.com/${{github.repository}}.git
+          git add -A
+          git commit -m "Update"
+          git push -f origin ${{github.ref_name}}
